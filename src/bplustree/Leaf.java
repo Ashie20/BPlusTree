@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,7 +96,18 @@ public class Leaf {
         }
     }
     
-    public void insert(Item item) {
+    /**
+     * Inserts the item into this leaf.  It may require splitting and promoting
+     * 
+     * @param item The item to insert into the leaf
+     * @param traversal A list of the nodes searched to get to this leaf.  It will
+     * be an empty list if there are no parent nodes (i.e. the root is a leaf)
+     */
+    public void insert(Item item, List<Node> traversal) {
+        insert(item); //TODO: do this differently
+    }
+    
+    private void insert(Item item) {
         if (isFull()) {
             // split and promote
             Leaf newLeaf = split();

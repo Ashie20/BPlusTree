@@ -124,4 +124,12 @@ public class Node {
         if (val == null || val.equals("null")) return null;
         return val;
     }
+    
+    public String[] getKeys() {
+        return keys;
+    }
+    
+    public String[] getPointers() {
+        return pointers;
+    }
 }
