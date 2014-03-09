@@ -83,6 +83,7 @@ public class Node {
     public void insert(Promotion p) {
         if (isFull()) {
             // TODO: This sucks. Split and promote, but we have to notify the leaves...
+            // Also, set new root node for the bplustree
         } else {
             insertLocal(p);
         }
