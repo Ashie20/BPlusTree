@@ -8,14 +8,14 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class MetaFile {
-    public String rootFileName;
-    public int nodeCount;
-    public int leafCount;
-    public static int fanOut = 4;
     
-    public static MetaFile getMetaFile() {
+    private static String rootFileName;
+    private static int nodeCount;
+    private static int leafCount;
+    public final static int FAN_OUT = 4;
+    
+    public static void read() {
         try {
             File file = new File("files/meta.txt");
             Scanner s = new Scanner(file);
@@ -24,22 +24,21 @@ public class MetaFile {
             
             String[] values = contents.split(",");
             
-            MetaFile result = new MetaFile();
-            result.rootFileName = values[0];
-            result.nodeCount = Integer.parseInt(values[1]);
-            result.leafCount = Integer.parseInt(values[2]);
+            rootFileName = values[0];
+            if (rootFileName.equals("null")) rootFileName = null;
             
-            return result;
+            nodeCount = Integer.parseInt(values[1]);
+            leafCount = Integer.parseInt(values[2]);
+            
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MetaFile.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
     
-    public static void createMetaFile(String fileName, int nodes, int leaves)
+    public static void write()
     {
         try {
-            String contents = String.format("%s,%d,%d", fileName, nodes, leaves);
+            String contents = String.format("%s,%d,%d", rootFileName, nodeCount, leafCount);
             FileWriter fw = new FileWriter("files/meta.txt");
             fw.write(contents);
             fw.close();
@@ -48,18 +47,35 @@ public class MetaFile {
         }
     }
     
-    public static void incrementLeafCount() {
-        MetaFile m = getMetaFile();
-        createMetaFile(m.rootFileName, m.nodeCount, m.leafCount + 1);
+    public static void init() {
+        rootFileName = null;
+        nodeCount = 0;
+        leafCount = 0;
+        write();
     }
-    
-    public static void incrementNodeCount() {
-        MetaFile m = getMetaFile();
-        createMetaFile(m.rootFileName, m.nodeCount + 1, m.leafCount);
-    }
-    
+        
     public static void setRootNode(String filename) {
-         MetaFile m = getMetaFile();
-        createMetaFile(filename, m.nodeCount, m.leafCount);
+        rootFileName = filename;
+    }
+    
+    public static String getNextLeafFilename() {
+        String filename = String.format("files/leaves/leaf_%06d.txt", leafCount);
+        leafCount ++;
+        return filename;
+    }
+    
+    public static String getNextNodeFilename() {
+        String filename = String.format("files/nodes/node_%06d.txt", nodeCount);
+        nodeCount ++;
+        return filename;
+    }
+    
+    public static String getRootFilename() {
+        return rootFileName;
+    }
+    
+    public static boolean isRootANode() {
+        if (rootFileName == null) return false;
+        else return rootFileName.contains("node");
     }
 }

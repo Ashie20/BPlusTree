@@ -1,115 +1,126 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package bplustree;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author Ryan
- */
 public class Node {
     
-    private String[] keys;
+    private String fileName;
     private String[] pointers;
+    private String[] keys;
     
-    public Node(String[] keys, String[] pointers) {
-        this.keys = keys;
-        this.pointers = pointers;
+    public Node(String fileName) {
+        if (fileName == null) {
+            initNewNode();
+        } else {
+            this.fileName = fileName;
+            read();
+        }
+        
+        // TODO: This should cover the first case, does it work always though?
+        if (!MetaFile.isRootANode()) {
+            MetaFile.setRootNode(this.fileName);
+        }
     }
     
-    public String writeNode(String filename) {
-        
+    private void initNewNode() {
+        fileName = MetaFile.getNextNodeFilename();
+        pointers = new String[MetaFile.FAN_OUT];
+        keys = new String[MetaFile.FAN_OUT - 1];
+    }
+    
+    // Todo: probably make this private
+    public void write() {
+        String contents = String.format("%s\n", fileName);
+        for (int i = 0; i < pointers.length; i++) {
+            String pointer = pointers[i] == null ? "null" : pointers[i];
+            contents += pointer + ",";
+        }
+        contents += "\n";
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i] == null ? "null" : keys[i];
+            contents += key + ",";
+        }
+                
         try {
-            String output = "";
-            for (String key : keys) {
-                output += key + ",";
-            }
-            output += "|";
-            for (String pointer : pointers) {
-                output += pointer + ",";
-            }
-            
-            FileWriter fw = new FileWriter(filename);
-            fw.write(output);
+            FileWriter fw = new FileWriter(fileName);
+            fw.write(contents);
             fw.close();
-            return filename;
         } catch (IOException ex) {
             Logger.getLogger(Leaf.class.getName()).log(Level.SEVERE, null, ex);
-        } 
-        return "null";
-    }
-    
-    public String writeNewNode() {
-        MetaFile m = MetaFile.getMetaFile();
-        String filename = String.format("files/nodes/node_%06d.txt", m.nodeCount);
-        MetaFile.incrementNodeCount();
-        writeNode(filename);
-        return filename;
-    }
-    
-    public static Node readNode(String filename) {
-       try {
-           File f = new File(filename);
-           Scanner s = new Scanner(f);
-           String contents = s.nextLine();
-           s.close();
-           
-           String[] parts = contents.split("|");
-           
-           String[] partKeys = parts[0].split(",");
-           String[] partPointers = parts[1].split(",");
-           
-           String[] keys = new String[MetaFile.fanOut -1 ];
-           String[] pointers = new String[MetaFile.fanOut];
-           
-           for (int i = 0; i< partKeys.length; i++) {
-               keys[i] = partKeys[i];
-           }
-           for (int i = 0; i< partPointers.length; i++) {
-               pointers[i] = partPointers[i];
-           }
-           
-           Node n = new Node(keys, pointers);
-           return n;
-           
-       } catch (Exception ex) {
-           Logger.getLogger(Node.class.getName()).log(Level.SEVERE, null, ex);
-       }
-       return null;
-    }
-    
-    public int getCapacity() {
-        return keys.length;
-    }
-    
-    public int getSize() {
-        int count = 0;
-        for (String s : keys) {
-            if (!s.equals("null")) count ++;
         }
-        return count;
     }
     
-    public boolean isFull() {
-        return getCapacity() == getSize();
+    private void read() {
+        try {
+            File f = new File(fileName);
+            Scanner s = new Scanner(f);
+            
+            String storedFileName = s.nextLine();
+            String[] pointers = s.nextLine().split(",");
+            String[] keys = s.nextLine().split(",");
+            
+            for (int i = 0; i < pointers.length; i++) {
+                pointers[i] = getNullOrVal(pointers[i]);
+            }
+            for (int i = 0; i < keys.length; i++) {
+                keys[i] = getNullOrVal(keys[i]);
+            }
+            
+            this.pointers = pointers;
+            this.keys = keys;
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Leaf.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
-    public String[] getKeys() {
-        return keys;
+    public void insert(Promotion p) {
+        if (isFull()) {
+            // TODO: This sucks. Split and promote, but we have to notify the leaves...
+        } else {
+            insertLocal(p);
+        }
+        
+        write();
     }
     
-    public String[] getPointers() {
-        return pointers;
+    private void insertLocal(Promotion p) {
+        int insertAt = -1;
+        for (int i = 0; i < keys.length; i++) {
+            if (keys[i] == null || p.key.compareTo(keys[i]) < 0) {
+                insertAt = i;
+                break;
+            }
+        }
+        
+        for (int i = keys.length - 1; i > insertAt; i--) {
+            keys[i] = keys[i-1];
+            pointers[i + 1] = pointers[i]; // TODO: check this
+        }
+        
+        // Todo: does this even work?
+        pointers[insertAt] = p.leftPointer;
+        keys[insertAt] = p.key;
+        pointers[insertAt + 1] = p.rightPointer;
     }
     
+    private boolean isFull() {
+        int capacity = keys.length;
+        int size = capacity;
+        for (String k : keys) {
+            if (k == null) size --;
+        }
+        return size == capacity;
+    }
+    
+    private String getNullOrVal(String val) {
+        if (val == null || val.equals("null")) return null;
+        return val;
+    }
 }
