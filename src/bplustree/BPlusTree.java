@@ -42,7 +42,7 @@ public class BPlusTree {
         traversal.push(node);
         
         String[] keys = node.getKeys();
-        int pointerId = -1; // Starts out as the index of the last pointer, i.e. item is greater than the last key
+        int pointerId = keys.length; // Starts out as the index of the last pointer, i.e. item is greater than the last key
         
         for (int i = 0; i < keys.length; i++) {
             if (keys[i] == null || item.key.compareTo(keys[i]) < 0) { // Item key comes before keys[i]

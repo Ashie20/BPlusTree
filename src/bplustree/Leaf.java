@@ -157,18 +157,16 @@ public class Leaf {
      * @param newLeaf 
      */
     private void promote(Leaf newLeaf, Stack<Node> traversal) {
-        // TODO: we may have to deal with newLeaf's parent file name here
         Promotion p = new Promotion(this.fileName, newLeaf.items[0].key, newLeaf.fileName);
                 
-        // TODO: Crap.  We also may have to have parent.insert return new parent file names if they change
         Node parent;
         if (traversal.isEmpty()) {
-            parent = new Node(null); // This should create a new node, right?
+            parent = new Node(p); 
         } else {
             parent = traversal.pop();
+            parent.insert(p, traversal);
         }
         
-        parent.insert(p, traversal);
     }
     
     private boolean isFull() {

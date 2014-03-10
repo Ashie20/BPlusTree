@@ -22,11 +22,25 @@ public class Node {
             this.fileName = fileName;
             read();
         }
+    }
+    
+    public Node(String[] keys, String[] pointers) {
+        initNewNode();
+        this.keys = keys;
+        this.pointers = pointers;
         
-        // TODO: This should cover the first case, does it work always though?
-        if (!MetaFile.isRootANode()) {
-            MetaFile.setRootNode(this.fileName);
-        }
+        write();
+    }
+    
+    public Node(Promotion p) {
+        initNewNode();
+        this.pointers[0] = p.leftPointer;
+        this.keys[0] = p.key;
+        this.pointers[1] = p.rightPointer;
+        
+        write();
+        
+        MetaFile.setRootNode(this.fileName);
     }
     
     private void initNewNode() {
@@ -93,7 +107,79 @@ public class Node {
             // else, pop off the next node and call insert() on that node, passing the shortened traversal up
             
             // Check if we are the root node.  If so, promotion set make new root node
-            System.out.println("");
+            
+            
+            // Implementation -----------------------
+            
+            // Copy into larger array in order
+            String[] newKeys = new String[keys.length + 1];
+            String[] newPointers = new String[pointers.length + 1];
+            
+            int insertAt = keys.length;
+            for (int i = 0; i < keys.length; i++) {
+                if (p.key.compareTo(keys[i]) < 0) {
+                    insertAt = i;
+                    break;
+                }
+            }
+            
+            for (int i = 0; i < insertAt; i++) {
+                newKeys[i] = keys[i];
+                newPointers[i] = pointers[i];
+            }
+            newKeys[insertAt] = p.key;
+            newPointers[insertAt] = p.leftPointer; // should be the same as pointers[insertAt];
+            newPointers[insertAt + 1] = p.rightPointer;
+            for (int i = newKeys.length - 1; i > insertAt; i--) {
+                newKeys[i] = keys[i-1];
+                pointers[i+1] = pointers[i];
+            }
+            
+            // Pull out middle element
+            int midIndex = newKeys.length/2;
+            String middleKey =  newKeys[midIndex];
+            
+            // Update current keys/pointers
+            for (int i = 0; i < midIndex; i++) {
+                keys[i] = newKeys[i];
+                pointers[i] = newPointers[i];
+            }
+            pointers[midIndex] = newPointers[midIndex];
+            
+            for (int i = midIndex; i< keys.length; i++) {
+                keys[i] = null;
+                pointers[i+1] = null;
+            }
+            
+            // New keys/pointers
+            String[] newNodeKeys = new String[keys.length];
+            String[] newNodePointers = new String[pointers.length];
+            
+            int k;
+            int j = 0;
+            for (k = midIndex + 1; k < newKeys.length; k++) {
+                newNodeKeys[j] = newKeys[k];
+                newNodePointers[j] = newPointers[k];
+                j++;
+            }
+            newNodePointers[j] = newPointers[k]; // TODO: Does this work?
+            
+            
+            // Create a new node
+            Node newNode = new Node(newNodeKeys, newNodePointers);
+            
+            // Create a new promotion
+            Promotion newP = new Promotion(this.fileName, middleKey, newNode.fileName);
+            
+            // Insert into traversal
+            if (traversal.isEmpty()) {
+                Node root = new Node(newP);
+            } else {
+                Node parent = traversal.pop();
+                parent.insert(newP, traversal);
+            }
+            
+            
         } else {
             insertLocal(p);
         }
