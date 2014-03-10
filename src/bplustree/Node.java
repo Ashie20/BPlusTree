@@ -85,6 +85,14 @@ public class Node {
         if (isFull()) {
             // TODO: Split and promote up the traversal?
             // Also, set new root node for the bplustree
+            
+            // Insert promotion into list of of keys sequentially
+            // copy second half of keys/pointers into new node
+            // Pull out the middle element into a new promotion pointing to the two nodes
+            // if traversal is empty, we're at the root node.  promotion will make a new root
+            // else, pop off the next node and call insert() on that node, passing the shortened traversal up
+            
+            // Check if we are the root node.  If so, promotion set make new root node
             System.out.println("");
         } else {
             insertLocal(p);
