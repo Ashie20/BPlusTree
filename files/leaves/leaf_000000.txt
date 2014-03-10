@@ -1,3 +1,3 @@
-files/leaves/leaf_000000.txt,null,null,files/leaves/leaf_000001.txt
+files/leaves/leaf_000000.txt,null,files/leaves/leaf_000001.txt
 A,B,null,null,
 record_1.bat,record_3.bat,null,null,

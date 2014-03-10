@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,10 +81,11 @@ public class Node {
         }
     }
     
-    public void insert(Promotion p) {
+    public void insert(Promotion p, Stack<Node> traversal) {
         if (isFull()) {
-            // TODO: This sucks. Split and promote, but we have to notify the leaves...
+            // TODO: Split and promote up the traversal?
             // Also, set new root node for the bplustree
+            System.out.println("");
         } else {
             insertLocal(p);
         }

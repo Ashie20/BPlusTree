@@ -3,6 +3,7 @@ package bplustree;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class BPlusTree {
 
@@ -22,26 +23,23 @@ public class BPlusTree {
     
     public void insert(Item item) {
         
+        
+        Stack<Node> traversal = new Stack<>();
         if (!MetaFile.isRootANode()) {
             // Root is a leaf OR null
-            List<Node> traversal = new ArrayList<Node>();
-            
             Leaf l = new Leaf(MetaFile.getRootFilename());
             l.insert(item, traversal);
         } else {
             // Root is a node
-            
             Node start = new Node(MetaFile.getRootFilename());
-            List<Node> traversal = new ArrayList<Node>();
-            
             searchAndInsert(item, start, traversal);
-            
         }
         
     }
     
-    private void searchAndInsert(Item item, Node node, List<Node> traversal) {
-        traversal.add(node);
+    // Gets called recursively
+    private void searchAndInsert(Item item, Node node, Stack<Node> traversal) {
+        traversal.push(node);
         
         String[] keys = node.getKeys();
         int pointerId = -1; // Starts out as the index of the last pointer, i.e. item is greater than the last key

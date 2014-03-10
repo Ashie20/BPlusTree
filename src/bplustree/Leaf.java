@@ -6,25 +6,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Leaf {
     
     private String fileName;
-    private String parentFileName;
     
     private String previousLeaf;
     private String nextLeaf;
     
     private Item[] items;
     
-    public Leaf(Item[] items, String previousLeaf, String nextLeaf, String parentFileName) {
+    public Leaf(Item[] items, String previousLeaf, String nextLeaf) {
         initNewLeaf();
         this.items = items;
         this.previousLeaf = previousLeaf;
         this.nextLeaf = nextLeaf;
-        this.parentFileName = parentFileName;
     }
     
     public Leaf(String fileName) {
@@ -44,13 +43,12 @@ public class Leaf {
         previousLeaf = null;
         nextLeaf = null;
         fileName = MetaFile.getNextLeafFilename();
-        parentFileName = null;
         items = new Item[MetaFile.FAN_OUT];
     }
     
     // Todo: probably make this private
     public void write() {
-        String contents = String.format("%s,%s,%s,%s\n", fileName, parentFileName, previousLeaf, nextLeaf);
+        String contents = String.format("%s,%s,%s\n", fileName, previousLeaf, nextLeaf);
         for (int i = 0; i < items.length; i++) {
             String key = items[i] == null ? "null" : items[i].key;
             contents += key + ",";
@@ -80,9 +78,8 @@ public class Leaf {
             String[] values = s.nextLine().split(",");
             
             fileName = getNullOrVal(info[0]);
-            parentFileName = getNullOrVal(info[1]);
-            previousLeaf = getNullOrVal(info[2]);
-            nextLeaf = getNullOrVal(info[3]);
+            previousLeaf = getNullOrVal(info[1]);
+            nextLeaf = getNullOrVal(info[2]);
             
             Item[] fileItems = new Item[keys.length];
             for (int i=0; i< fileItems.length; i++) {
@@ -103,22 +100,18 @@ public class Leaf {
      * @param traversal A list of the nodes searched to get to this leaf.  It will
      * be an empty list if there are no parent nodes (i.e. the root is a leaf)
      */
-    public void insert(Item item, List<Node> traversal) {
-        insert(item); //TODO: do this differently
-    }
-    
-    private void insert(Item item) {
+    public void insert(Item item, Stack<Node> traversal) {
         if (isFull()) {
             // split and promote
             Leaf newLeaf = split();
-            promote(newLeaf);
+            promote(newLeaf, traversal);
         } else {
             // Insert the item according to its key
             insertLocal(item);
         }
         
         // Write this leaf back to its file
-        write();
+        write();        
     }
     
     private void insertLocal(Item item) {
@@ -151,8 +144,7 @@ public class Leaf {
             j++;
         }
         
-        // TODO: is copying up the parentFileName right?
-        Leaf newLeaf = new Leaf(newItems, this.fileName, nextLeaf, parentFileName);
+        Leaf newLeaf = new Leaf(newItems, this.fileName, nextLeaf);
         newLeaf.write();
         this.nextLeaf = newLeaf.fileName;
         
@@ -164,13 +156,19 @@ public class Leaf {
      * newLeaf as the key to promote.  It may have to make a new node?
      * @param newLeaf 
      */
-    private void promote(Leaf newLeaf) {
+    private void promote(Leaf newLeaf, Stack<Node> traversal) {
         // TODO: we may have to deal with newLeaf's parent file name here
         Promotion p = new Promotion(this.fileName, newLeaf.items[0].key, newLeaf.fileName);
                 
         // TODO: Crap.  We also may have to have parent.insert return new parent file names if they change
-        Node parent = new Node(this.parentFileName);
-        parent.insert(p);
+        Node parent;
+        if (traversal.isEmpty()) {
+            parent = new Node(null); // This should create a new node, right?
+        } else {
+            parent = traversal.pop();
+        }
+        
+        parent.insert(p, traversal);
     }
     
     private boolean isFull() {
