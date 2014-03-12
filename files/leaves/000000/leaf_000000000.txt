@@ -1,3 +1,0 @@
-l000000000,null,l000000012
-A,A,null,null,
-record_1.bat,record_1.bat,null,null,

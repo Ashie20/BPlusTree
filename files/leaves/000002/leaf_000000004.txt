@@ -1,3 +1,0 @@
-l000000004,l000000003,l000000016
-I,I,I,null,
-record_9.bat,record_9.bat,record_9.bat,null,
