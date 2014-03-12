@@ -1,3 +1,0 @@
-files/nodes/node_000000.txt
-files/leaves/leaf_000000.txt,files/leaves/leaf_000001.txt,files/leaves/leaf_000002.txt,null,
-C,F,null,

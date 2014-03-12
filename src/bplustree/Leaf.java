@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class Leaf {
     
-    private String fileName;
+    private String identifier;
     
     private String previousLeaf;
     private String nextLeaf;
@@ -26,29 +26,41 @@ public class Leaf {
         this.nextLeaf = nextLeaf;
     }
     
-    public Leaf(String fileName) {
-        if (fileName == null) {
+    public Leaf(String identifier) {
+        if (identifier == null) {
             initNewLeaf();
         } else {
-            this.fileName = fileName;
+            this.identifier = identifier;
             read();
         }
         
-        if (MetaFile.getRootFilename() == null) {
-            MetaFile.setRootNode(this.fileName);
+        // Todo: is this necessary
+        if (MetaFile.getRootIdentifier()== null) {
+            MetaFile.setRootNode(this.identifier);
         }
     }
     
     private void initNewLeaf() {
         previousLeaf = null;
         nextLeaf = null;
-        fileName = MetaFile.getNextLeafFilename();
+        identifier = MetaFile.getNextLeafIdentifier();
         items = new Item[MetaFile.FAN_OUT];
+    }
+    
+    public Item[] getItems() {
+        return items;
+    }
+    
+    public Leaf getNext() {
+        if (nextLeaf == null) {
+            return null;
+        }
+        return new Leaf(nextLeaf);
     }
     
     // Todo: probably make this private
     public void write() {
-        String contents = String.format("%s,%s,%s\n", fileName, previousLeaf, nextLeaf);
+        String contents = String.format("%s,%s,%s\n", identifier, previousLeaf, nextLeaf);
         for (int i = 0; i < items.length; i++) {
             String key = items[i] == null ? "null" : items[i].key;
             contents += key + ",";
@@ -60,7 +72,10 @@ public class Leaf {
         }
                 
         try {
+            FileUtility.makeDirectory(identifier);
+            String fileName = FileUtility.getFilename(identifier);
             FileWriter fw = new FileWriter(fileName);
+            System.out.println(fileName);
             fw.write(contents);
             fw.close();
         } catch (IOException ex) {
@@ -70,14 +85,14 @@ public class Leaf {
     
     private void read() {
         try {
-            File f = new File(fileName);
+            File f = new File(FileUtility.getFilename(identifier));
             Scanner s = new Scanner(f);
             
             String[] info = s.nextLine().split(",");
             String[] keys = s.nextLine().split(",");
             String[] values = s.nextLine().split(",");
             
-            fileName = getNullOrVal(info[0]);
+            identifier = getNullOrVal(info[0]);
             previousLeaf = getNullOrVal(info[1]);
             nextLeaf = getNullOrVal(info[2]);
             
@@ -104,6 +119,15 @@ public class Leaf {
         if (isFull()) {
             // split and promote
             Leaf newLeaf = split();
+            
+            // This is bad but is has to be here
+            if (item.key.compareTo(newLeaf.items[0].key) < 0) {
+                this.insertLocal(item);
+            } else {
+                newLeaf.insertLocal(item);
+                newLeaf.write();
+            }
+            
             promote(newLeaf, traversal);
         } else {
             // Insert the item according to its key
@@ -144,9 +168,9 @@ public class Leaf {
             j++;
         }
         
-        Leaf newLeaf = new Leaf(newItems, this.fileName, nextLeaf);
+        Leaf newLeaf = new Leaf(newItems, this.identifier, nextLeaf);
         newLeaf.write();
-        this.nextLeaf = newLeaf.fileName;
+        this.nextLeaf = newLeaf.identifier;
         
         return newLeaf;
     }
@@ -157,11 +181,11 @@ public class Leaf {
      * @param newLeaf 
      */
     private void promote(Leaf newLeaf, Stack<Node> traversal) {
-        Promotion p = new Promotion(this.fileName, newLeaf.items[0].key, newLeaf.fileName);
+        Promotion p = new Promotion(this.identifier, newLeaf.items[0].key, newLeaf.identifier);
                 
         Node parent;
         if (traversal.isEmpty()) {
-            parent = new Node(p); 
+            parent = new Node(p);  // Creates a new node and writes to disk
         } else {
             parent = traversal.pop();
             parent.insert(p, traversal);

@@ -11,15 +11,15 @@ import java.util.logging.Logger;
 
 public class Node {
     
-    private String fileName;
+    private String identifer;
     private String[] pointers;
     private String[] keys;
     
-    public Node(String fileName) {
-        if (fileName == null) {
+    public Node(String identifer) {
+        if (identifer == null) {
             initNewNode();
         } else {
-            this.fileName = fileName;
+            this.identifer = identifer;
             read();
         }
     }
@@ -40,18 +40,18 @@ public class Node {
         
         write();
         
-        MetaFile.setRootNode(this.fileName);
+        MetaFile.setRootNode(this.identifer);
     }
     
     private void initNewNode() {
-        fileName = MetaFile.getNextNodeFilename();
+        identifer = MetaFile.getNextNodeIdentifier();
         pointers = new String[MetaFile.FAN_OUT];
         keys = new String[MetaFile.FAN_OUT - 1];
     }
     
     // Todo: probably make this private
     public void write() {
-        String contents = String.format("%s\n", fileName);
+        String contents = String.format("%s\n", identifer);
         for (int i = 0; i < pointers.length; i++) {
             String pointer = pointers[i] == null ? "null" : pointers[i];
             contents += pointer + ",";
@@ -63,7 +63,8 @@ public class Node {
         }
                 
         try {
-            FileWriter fw = new FileWriter(fileName);
+            FileUtility.makeDirectory(identifer);
+            FileWriter fw = new FileWriter(FileUtility.getFilename(identifer));
             fw.write(contents);
             fw.close();
         } catch (IOException ex) {
@@ -73,10 +74,10 @@ public class Node {
     
     private void read() {
         try {
-            File f = new File(fileName);
+            File f = new File(FileUtility.getFilename(identifer));
             Scanner s = new Scanner(f);
             
-            String storedFileName = s.nextLine();
+            String storedIdentifier = s.nextLine();
             String[] pointers = s.nextLine().split(",");
             String[] keys = s.nextLine().split(",");
             
@@ -132,7 +133,7 @@ public class Node {
             newPointers[insertAt + 1] = p.rightPointer;
             for (int i = newKeys.length - 1; i > insertAt; i--) {
                 newKeys[i] = keys[i-1];
-                pointers[i+1] = pointers[i];
+                newPointers[i+1] = pointers[i];
             }
             
             // Pull out middle element
@@ -169,7 +170,7 @@ public class Node {
             Node newNode = new Node(newNodeKeys, newNodePointers);
             
             // Create a new promotion
-            Promotion newP = new Promotion(this.fileName, middleKey, newNode.fileName);
+            Promotion newP = new Promotion(this.identifer, middleKey, newNode.identifer);
             
             // Insert into traversal
             if (traversal.isEmpty()) {

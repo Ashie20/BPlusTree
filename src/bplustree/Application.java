@@ -1,5 +1,7 @@
 package bplustree;
 
+import java.io.File;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -10,9 +12,9 @@ public class Application {
     
     public static void main(String[] args) {
         BPlusTree bpt = new BPlusTree();
-        
-        bpt.createTree();
-        bpt.insert(new Item("A", "record_1.bat"));        
+                
+        /*
+        bpt.insert(new Item("A", "record_1.bat"));     
         bpt.insert(new Item("C", "record_2.bat"));
         bpt.insert(new Item("B", "record_3.bat"));
         bpt.insert(new Item("D", "record_4.bat"));
@@ -28,8 +30,16 @@ public class Application {
         bpt.insert(new Item("N", "record_14.bat"));
         bpt.insert(new Item("O", "record_15.bat"));
         bpt.insert(new Item("P", "record_16.bat"));
+                */
         
-        MetaFile.write();
+        //MetaFile.write();
+        
+        List<Item> results = bpt.search("C");
+        
+        System.out.println("Results:");
+        for (Item i : results) {
+            System.out.println(i.key + ": " + i.value);
+        }
         
         System.out.println("Done.");
     }

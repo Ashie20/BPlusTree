@@ -10,22 +10,29 @@ import java.util.logging.Logger;
 
 public class MetaFile {
     
-    private static String rootFileName;
+    private static String rootIdentifier;
     private static int nodeCount;
     private static int leafCount;
     public final static int FAN_OUT = 4;
+    private final static String metaFileName = "files/meta.txt";
+    private static boolean writeImmediately = true;
+    
+    public static boolean exists() {
+        File file = new File(metaFileName);
+        return file.exists() && file.canRead();
+    }
     
     public static void read() {
         try {
-            File file = new File("files/meta.txt");
+            File file = new File(metaFileName);
             Scanner s = new Scanner(file);
             String contents = s.nextLine();
             s.close();
             
             String[] values = contents.split(",");
             
-            rootFileName = values[0];
-            if (rootFileName.equals("null")) rootFileName = null;
+            rootIdentifier = values[0];
+            if (rootIdentifier.equals("null")) rootIdentifier = null;
             
             nodeCount = Integer.parseInt(values[1]);
             leafCount = Integer.parseInt(values[2]);
@@ -38,8 +45,8 @@ public class MetaFile {
     public static void write()
     {
         try {
-            String contents = String.format("%s,%d,%d", rootFileName, nodeCount, leafCount);
-            FileWriter fw = new FileWriter("files/meta.txt");
+            String contents = String.format("%s,%d,%d", rootIdentifier, nodeCount, leafCount);
+            FileWriter fw = new FileWriter(metaFileName);
             fw.write(contents);
             fw.close();
         } catch (IOException ex) {
@@ -48,34 +55,52 @@ public class MetaFile {
     }
     
     public static void init() {
-        rootFileName = null;
+        rootIdentifier = null;
         nodeCount = 0;
         leafCount = 0;
         write();
     }
         
     public static void setRootNode(String filename) {
-        rootFileName = filename;
+        rootIdentifier = filename;
+        
+        if (writeImmediately) write();
     }
     
-    public static String getNextLeafFilename() {
-        String filename = String.format("files/leaves/leaf_%06d.txt", leafCount);
+    public static String getNextLeafIdentifier() {
+        String filename = String.format("l%09d", leafCount);
         leafCount ++;
+                
+        if (writeImmediately) write();
+        
         return filename;
     }
     
-    public static String getNextNodeFilename() {
-        String filename = String.format("files/nodes/node_%06d.txt", nodeCount);
+    public static String getNextNodeIdentifier() {
+        String filename = String.format("n%09d", nodeCount);
         nodeCount ++;
+        
+        if (writeImmediately) write();
+        
         return filename;
     }
     
-    public static String getRootFilename() {
-        return rootFileName;
+    public static String getRootIdentifier() {
+        return rootIdentifier;
     }
     
     public static boolean isRootANode() {
-        if (rootFileName == null) return false;
-        else return rootFileName.contains("node");
+        if (rootIdentifier == null) return false;
+        else return rootIdentifier.contains("n");
     }
+    
+    /* Set writeImmediately to false to prevent I/O on the meta file during periods
+       when a large number of operations will be completed while this class is in
+       memory, i.e. during an initial insert.  Be sure to call write() and se this
+       back to true when you are done.
+    */
+    public static void setWriteMode(boolean writeImmediately) {
+        MetaFile.writeImmediately = writeImmediately;
+    }
+    
 }
