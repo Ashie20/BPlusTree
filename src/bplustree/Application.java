@@ -34,11 +34,14 @@ public class Application {
         
         //MetaFile.write();
         
-        List<Item> results = bpt.search("C");
+        List<Item> results = bpt.search("A");
         
         System.out.println("Results:");
         for (Item i : results) {
             System.out.println(i.key + ": " + i.value);
+        }
+        if (results.isEmpty()) {
+            System.out.println("Empty result set");
         }
         
         System.out.println("Done.");

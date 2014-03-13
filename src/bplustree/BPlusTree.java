@@ -41,12 +41,16 @@ public class BPlusTree {
     }
         
     public List<Item> search(String key) {
+        if (MetaFile.getRootIdentifier() == null) {
+            return new ArrayList<>();
+        }        
+                
         SearchResult first = searchForFirst(key);
         List<Item> results = new ArrayList<>();
         
-        if (!first.success) {
+        if (!first.success || MetaFile.getRootIdentifier() == null) {
             return results;
-        }
+        }        
         
         // TODO: start linearly traversing the leaves starting from the first item in the Leaf
         Leaf leaf = first.leaf;
@@ -54,7 +58,9 @@ public class BPlusTree {
         int index = first.firstIndex;
         
         while (true) {
-            if (index >= items.length) {
+            // We're at a null element OR reached the end of a leaf
+            // We need to check the next leaf
+            if (items[index] == null || index >= items.length) {
                 leaf = leaf.getNext();
                 if (leaf == null) break;
                 
@@ -62,8 +68,7 @@ public class BPlusTree {
                 items = leaf.getItems();
             }
             
-            if (items[index] == null) break;
-            
+            // We have items in this leaf.  See if we're equal.  If not, just quit!
             if (items[index].key.equals(key)) {
                 results.add(items[index]);
                 index++;
@@ -106,7 +111,7 @@ public class BPlusTree {
         int pointerId = keys.length; // Starts out as the index of the last pointer, i.e. item is greater than the last key
         
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || key.compareTo(keys[i]) < 0) { // Item key comes before keys[i]
+            if (keys[i] == null || key.compareTo(keys[i]) <= 0) { // Item key comes before keys[i]
                 pointerId = i;
                 break;
             }

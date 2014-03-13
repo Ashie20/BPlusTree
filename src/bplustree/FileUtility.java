@@ -14,7 +14,7 @@ import java.io.File;
  */
 public class FileUtility {
     
-    private static final int BUCKET_SIZE = 2;
+    private static final int BUCKET_SIZE = 10;
     
     // Identifiers will be n%09d, l%09d 
     public static String getFilename(String identifier) {

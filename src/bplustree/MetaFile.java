@@ -13,7 +13,7 @@ public class MetaFile {
     private static String rootIdentifier;
     private static int nodeCount;
     private static int leafCount;
-    public final static int FAN_OUT = 4;
+    public final static int FAN_OUT = 10;
     private final static String metaFileName = "files/meta.txt";
     private static boolean writeImmediately = true;
     

@@ -1,7 +1,5 @@
 package bplustree;
 
-import bplustree.Leaf;
-
 public class SearchResult {
 
     public Leaf leaf;
