@@ -75,7 +75,6 @@ public class Leaf {
             FileUtility.makeDirectory(identifier);
             String fileName = FileUtility.getFilename(identifier);
             FileWriter fw = new FileWriter(fileName);
-            System.out.println(fileName);
             fw.write(contents);
             fw.close();
         } catch (IOException ex) {
@@ -121,7 +120,7 @@ public class Leaf {
             Leaf newLeaf = split();
             
             // This is bad but is has to be here
-            if (item.key.compareTo(newLeaf.items[0].key) < 0) {
+            if (Comparer.compare(item.key, newLeaf.items[0].key) < 0) {
                 this.insertLocal(item);
             } else {
                 newLeaf.insertLocal(item);
@@ -141,7 +140,7 @@ public class Leaf {
     private void insertLocal(Item item) {
         int insertAt = -1;
         for (int i = 0 ; i < items.length; i++) {
-            if (items[i] == null || item.key.compareTo(items[i].key) < 0) {
+            if (items[i] == null || Comparer.compare(item.key, items[i].key) < 0) {
                 insertAt = i;
                 break;
             }

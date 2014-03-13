@@ -7,7 +7,9 @@ import java.util.Stack;
 
 public class BPlusTree {
 
-    public BPlusTree() {
+    public BPlusTree(boolean keysAreNumbers) {
+        MetaFile.setKeyType(keysAreNumbers);
+        
         if (MetaFile.exists()) {
             MetaFile.read();
         } else {
@@ -111,7 +113,7 @@ public class BPlusTree {
         int pointerId = keys.length; // Starts out as the index of the last pointer, i.e. item is greater than the last key
         
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || key.compareTo(keys[i]) <= 0) { // Item key comes before keys[i]
+            if (keys[i] == null || Comparer.compare(key, keys[i]) <= 0) { // Item key comes before keys[i]
                 pointerId = i;
                 break;
             }
@@ -136,7 +138,7 @@ public class BPlusTree {
         int pointerId = keys.length; // Starts out as the index of the last pointer, i.e. item is greater than the last key
         
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || item.key.compareTo(keys[i]) < 0) { // Item key comes before keys[i]
+            if (keys[i] == null || Comparer.compare(item.key, keys[i]) < 0) { // Item key comes before keys[i]
                 pointerId = i;
                 break;
             }

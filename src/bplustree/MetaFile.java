@@ -10,12 +10,18 @@ import java.util.logging.Logger;
 
 public class MetaFile {
     
-    private static String rootIdentifier;
-    private static int nodeCount;
-    private static int leafCount;
-    public final static int FAN_OUT = 10;
-    private final static String metaFileName = "files/meta.txt";
+    // Things to store
+    private static String rootIdentifier = null;
+    private static int nodeCount = 0;
+    private static int leafCount = 0;
+    private static boolean keysAreNumbers = true;
+    public static int FAN_OUT = 10;
+    
+    // Things to not store (stay in memory only)
     private static boolean writeImmediately = true;
+    private final static String metaFileName = "files/meta.txt";
+    
+    
     
     public static boolean exists() {
         File file = new File(metaFileName);
@@ -36,6 +42,8 @@ public class MetaFile {
             
             nodeCount = Integer.parseInt(values[1]);
             leafCount = Integer.parseInt(values[2]);
+            FAN_OUT = Integer.parseInt(values[3]);
+            keysAreNumbers = Boolean.parseBoolean(values[4]);
             
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MetaFile.class.getName()).log(Level.SEVERE, null, ex);
@@ -45,7 +53,7 @@ public class MetaFile {
     public static void write()
     {
         try {
-            String contents = String.format("%s,%d,%d", rootIdentifier, nodeCount, leafCount);
+            String contents = String.format("%s,%d,%d,%d,%s", rootIdentifier, nodeCount, leafCount, FAN_OUT, keysAreNumbers ? "true" : "false");
             FileWriter fw = new FileWriter(metaFileName);
             fw.write(contents);
             fw.close();
@@ -55,9 +63,6 @@ public class MetaFile {
     }
     
     public static void init() {
-        rootIdentifier = null;
-        nodeCount = 0;
-        leafCount = 0;
         write();
     }
         
@@ -92,6 +97,14 @@ public class MetaFile {
     public static boolean isRootANode() {
         if (rootIdentifier == null) return false;
         else return rootIdentifier.contains("n");
+    }
+    
+    public static boolean areKeysNumbers() {
+        return keysAreNumbers;
+    }
+    
+    public static void setKeyType(boolean keysAreNumbers) {
+        MetaFile.keysAreNumbers = keysAreNumbers;
     }
     
     /* Set writeImmediately to false to prevent I/O on the meta file during periods

@@ -11,8 +11,12 @@ import java.util.Scanner;
 public class Application {
     
     public static void main(String[] args) {
-        BPlusTree bpt = new BPlusTree();
-                
+        BPlusTree bpt = new BPlusTree(true);
+            
+        bpt.insert(new Item("6", "record_6.bat")); 
+        bpt.insert(new Item("10", "record_10.bat")); 
+        bpt.insert(new Item("102", "record_102.bat")); 
+        bpt.insert(new Item("5", "record_5.bat"));  
         /*
         bpt.insert(new Item("A", "record_1.bat"));     
         bpt.insert(new Item("C", "record_2.bat"));
@@ -34,7 +38,7 @@ public class Application {
         
         //MetaFile.write();
         
-        List<Item> results = bpt.search("A");
+        List<Item> results = bpt.search("102");
         
         System.out.println("Results:");
         for (Item i : results) {

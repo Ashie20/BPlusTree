@@ -118,7 +118,7 @@ public class Node {
             
             int insertAt = keys.length;
             for (int i = 0; i < keys.length; i++) {
-                if (p.key.compareTo(keys[i]) < 0) {
+                if (Comparer.compare(p.key, keys[i]) < 0) {
                     insertAt = i;
                     break;
                 }
@@ -191,7 +191,7 @@ public class Node {
     private void insertLocal(Promotion p) {
         int insertAt = -1;
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || p.key.compareTo(keys[i]) < 0) {
+            if (keys[i] == null || Comparer.compare(p.key, keys[i]) < 0) {
                 insertAt = i;
                 break;
             }
