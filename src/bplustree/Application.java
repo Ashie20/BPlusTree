@@ -12,15 +12,11 @@ import java.util.Scanner;
 public class Application {
     
     public static void main(String[] args) {
-        createTimesTree();
-        /*
-        BPlusTree bpt = new BPlusTree(true);
-            
-        bpt.insert(new Item("6", "record_6.bat")); 
-        bpt.insert(new Item("10", "record_10.bat")); 
-        bpt.insert(new Item("102", "record_102.bat")); 
-        bpt.insert(new Item("5", "record_5.bat"));  
+        //createTimesTree();
         
+        BPlusTree bpt = new BPlusTree("C:\\Users\\Ryan\\Desktop\\tree");
+        bpt.getMetaFile().setKeyType(false);
+                    
         bpt.insert(new Item("A", "record_1.bat"));     
         bpt.insert(new Item("C", "record_2.bat"));
         bpt.insert(new Item("B", "record_3.bat"));
@@ -40,7 +36,7 @@ public class Application {
         
         //MetaFile.write();
         
-        List<Item> results = bpt.search("102");
+        List<Item> results = bpt.search("O");
         
         System.out.println("Results:");
         for (Item i : results) {
@@ -51,22 +47,26 @@ public class Application {
         }
         
         System.out.println("Done.");
-        */
+        
     }
-    
+        
     private static void createTimesTree() {
         Scanner in = new Scanner(System.in);
-        System.out.print("Enter base path to times directory: ");
+        
+        System.out.println("Enter base path for tree structure: ");
         String basePath = in.nextLine();
+                
+        System.out.print("Enter base path to existing times directory: ");
+        String originalsPath = in.nextLine();
         
         System.out.print("Enter number of times: ");
         int num = Integer.parseInt(in.nextLine());
         
-        BPlusTree bpt = new BPlusTree(true);
-        MetaFile.setWriteMode(false);
+        BPlusTree bpt = new BPlusTree(basePath);
+        bpt.getMetaFile().setWriteMode(false);
         
         for (int i = 0; i < num; i++) {
-            String filename = String.format("%s/time_%06d.dat", basePath, i);
+            String filename = String.format("%s/time_%06d.dat", originalsPath, i);
             
             if (i % 100 == 0) {
                 System.out.println("Inserting " + filename);
@@ -78,8 +78,8 @@ public class Application {
             
         }
         
-        MetaFile.setWriteMode(true);
-        MetaFile.write();
+        bpt.getMetaFile().setWriteMode(true);
+        bpt.getMetaFile().write();
     }
     
 }

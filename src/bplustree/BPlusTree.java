@@ -6,51 +6,67 @@ import java.util.List;
 import java.util.Stack;
 
 public class BPlusTree {
+    
+    private MetaFile metaFile;
+    private FileUtility fileUtility;
+    private String baseDirectory;
+    private Comparer comparer;
 
-    public BPlusTree(boolean keysAreNumbers) {
-        MetaFile.setKeyType(keysAreNumbers);
+    public BPlusTree(String baseDirectory) {
         
-        if (MetaFile.exists()) {
-            MetaFile.read();
+        this.baseDirectory = baseDirectory;
+        
+        metaFile = new MetaFile(baseDirectory);
+        fileUtility = new FileUtility(metaFile);
+        
+        if (metaFile.exists()) {
+            metaFile.read();
         } else {
             createTree();
         }
+        
+        
+        comparer = new Comparer(metaFile);
+    }
+    
+    public MetaFile getMetaFile() {
+        return metaFile;
     }
     
     private void createTree() {
-        File leaves = new File("files/leaves");
+        File leaves = new File("leaves");
         leaves.mkdirs();
         
-        File nodes = new File("files/nodes");
+        File nodes = new File("nodes");
         nodes.mkdirs();        
         
-        MetaFile.init();
+        metaFile.init();
     }
     
     public void insert(Item item) {
         
         Stack<Node> traversal = new Stack<>();
-        if (!MetaFile.isRootANode()) {
+        if (!metaFile.isRootANode()) {
             // Root is a leaf OR null
-            Leaf l = new Leaf(MetaFile.getRootIdentifier());
+            Leaf l = new Leaf(metaFile.getRootIdentifier(), metaFile);
             l.insert(item, traversal);
         } else {
             // Root is a node
-            Node start = new Node(MetaFile.getRootIdentifier());
+            Node start = new Node(metaFile.getRootIdentifier(), metaFile);
             searchAndInsert(item, start, traversal);
         }
         
     }
         
     public List<Item> search(String key) {
-        if (MetaFile.getRootIdentifier() == null) {
+        if (metaFile.getRootIdentifier() == null) {
             return new ArrayList<>();
         }        
                 
         SearchResult first = searchForFirst(key);
         List<Item> results = new ArrayList<>();
         
-        if (!first.success || MetaFile.getRootIdentifier() == null) {
+        if (!first.success || metaFile.getRootIdentifier() == null) {
             return results;
         }        
         
@@ -83,13 +99,13 @@ public class BPlusTree {
     }
     
     private SearchResult searchForFirst(String key) {
-        if (!MetaFile.isRootANode()) {
+        if (!metaFile.isRootANode()) {
             // Root is a leaf OR null
-            Leaf l = new Leaf(MetaFile.getRootIdentifier());
+            Leaf l = new Leaf(metaFile.getRootIdentifier(), metaFile);
             return searchLeaf(l, key);
         } else {
             // Root is a node
-            Node start = new Node(MetaFile.getRootIdentifier());
+            Node start = new Node(metaFile.getRootIdentifier(), metaFile);
             return searchNodes(start, key);
         }
     }
@@ -113,7 +129,7 @@ public class BPlusTree {
         int pointerId = keys.length; // Starts out as the index of the last pointer, i.e. item is greater than the last key
         
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || Comparer.compare(key, keys[i]) <= 0) { // Item key comes before keys[i]
+            if (keys[i] == null || comparer.compare(key, keys[i]) <= 0) { // Item key comes before keys[i]
                 pointerId = i;
                 break;
             }
@@ -122,10 +138,10 @@ public class BPlusTree {
         String pointer = node.getPointers()[pointerId];
         
         if (pointer.startsWith("n")) {
-            Node next = new Node(pointer);
+            Node next = new Node(pointer, metaFile);
             return searchNodes(next, key);
         } else {
-            Leaf l = new Leaf(pointer);
+            Leaf l = new Leaf(pointer, metaFile);
             return searchLeaf(l, key); // Base case
         }
     }
@@ -138,7 +154,7 @@ public class BPlusTree {
         int pointerId = keys.length; // Starts out as the index of the last pointer, i.e. item is greater than the last key
         
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || Comparer.compare(item.key, keys[i]) < 0) { // Item key comes before keys[i]
+            if (keys[i] == null || comparer.compare(item.key, keys[i]) < 0) { // Item key comes before keys[i]
                 pointerId = i;
                 break;
             }
@@ -148,11 +164,11 @@ public class BPlusTree {
         
         if (pointer.startsWith("n")) {
             // Continue traversal
-            Node next = new Node(pointer);
+            Node next = new Node(pointer, metaFile);
             searchAndInsert(item, next, traversal);
         } else {
             // We're at a leaf.  Insert into the leaf.
-            Leaf l = new Leaf(pointer);
+            Leaf l = new Leaf(pointer, metaFile);
             l.insert(item, traversal);
         }
         

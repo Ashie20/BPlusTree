@@ -11,24 +11,29 @@ import java.util.logging.Logger;
 public class MetaFile {
     
     // Things to store
-    private static String rootIdentifier = null;
-    private static int nodeCount = 0;
-    private static int leafCount = 0;
-    private static boolean keysAreNumbers = true;
-    public static int FAN_OUT = 10;
+    private String rootIdentifier = null;
+    private int nodeCount = 0;
+    private int leafCount = 0;
+    private boolean keysAreNumbers = true;
+    public int FAN_OUT = 10;
+    public int BUCKET_SIZE = 10;    
     
     // Things to not store (stay in memory only)
-    private static boolean writeImmediately = true;
-    private final static String metaFileName = "files/meta.txt";
+    private boolean writeImmediately = true;
+    private String metaFileName;
+    private String baseDirectory;
     
+    public MetaFile(String baseDirectory) {
+        this.baseDirectory = baseDirectory;
+        this.metaFileName = baseDirectory + "/meta.txt";
+    }
     
-    
-    public static boolean exists() {
+    public boolean exists() {
         File file = new File(metaFileName);
         return file.exists() && file.canRead();
     }
     
-    public static void read() {
+    public void read() {
         try {
             File file = new File(metaFileName);
             Scanner s = new Scanner(file);
@@ -42,18 +47,19 @@ public class MetaFile {
             
             nodeCount = Integer.parseInt(values[1]);
             leafCount = Integer.parseInt(values[2]);
-            FAN_OUT = Integer.parseInt(values[3]);
-            keysAreNumbers = Boolean.parseBoolean(values[4]);
+            BUCKET_SIZE = Integer.parseInt(values[3]);
+            FAN_OUT = Integer.parseInt(values[4]);
+            keysAreNumbers = Boolean.parseBoolean(values[5]);
             
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MetaFile.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public static void write()
+    public void write()
     {
         try {
-            String contents = String.format("%s,%d,%d,%d,%s", rootIdentifier, nodeCount, leafCount, FAN_OUT, keysAreNumbers ? "true" : "false");
+            String contents = String.format("%s,%d,%d,%d,%d,%s", rootIdentifier, nodeCount, leafCount, BUCKET_SIZE, FAN_OUT, keysAreNumbers ? "true" : "false");
             FileWriter fw = new FileWriter(metaFileName);
             fw.write(contents);
             fw.close();
@@ -62,17 +68,17 @@ public class MetaFile {
         }
     }
     
-    public static void init() {
+    public void init() {
         write();
     }
         
-    public static void setRootNode(String filename) {
+    public void setRootNode(String filename) {
         rootIdentifier = filename;
         
         if (writeImmediately) write();
     }
     
-    public static String getNextLeafIdentifier() {
+    public String getNextLeafIdentifier() {
         String filename = String.format("l%09d", leafCount);
         leafCount ++;
                 
@@ -81,7 +87,7 @@ public class MetaFile {
         return filename;
     }
     
-    public static String getNextNodeIdentifier() {
+    public String getNextNodeIdentifier() {
         String filename = String.format("n%09d", nodeCount);
         nodeCount ++;
         
@@ -90,21 +96,21 @@ public class MetaFile {
         return filename;
     }
     
-    public static String getRootIdentifier() {
+    public String getRootIdentifier() {
         return rootIdentifier;
     }
     
-    public static boolean isRootANode() {
+    public boolean isRootANode() {
         if (rootIdentifier == null) return false;
         else return rootIdentifier.contains("n");
     }
     
-    public static boolean areKeysNumbers() {
+    public boolean areKeysNumbers() {
         return keysAreNumbers;
     }
     
-    public static void setKeyType(boolean keysAreNumbers) {
-        MetaFile.keysAreNumbers = keysAreNumbers;
+    public void setKeyType(boolean keysAreNumbers) {
+        this.keysAreNumbers = keysAreNumbers;
     }
     
     /* Set writeImmediately to false to prevent I/O on the meta file during periods
@@ -112,8 +118,11 @@ public class MetaFile {
        memory, i.e. during an initial insert.  Be sure to call write() and se this
        back to true when you are done.
     */
-    public static void setWriteMode(boolean writeImmediately) {
-        MetaFile.writeImmediately = writeImmediately;
+    public void setWriteMode(boolean writeImmediately) {
+        this.writeImmediately = writeImmediately;
     }
     
+    public String getBaseDirectory() {
+        return baseDirectory;
+    }
 }

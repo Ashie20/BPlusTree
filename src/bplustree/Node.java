@@ -15,7 +15,11 @@ public class Node {
     private String[] pointers;
     private String[] keys;
     
-    public Node(String identifer) {
+    private MetaFile metaFile;
+    
+    public Node(String identifer, MetaFile metaFile) {
+        this.metaFile = metaFile;
+        
         if (identifer == null) {
             initNewNode();
         } else {
@@ -24,7 +28,9 @@ public class Node {
         }
     }
     
-    public Node(String[] keys, String[] pointers) {
+    public Node(String[] keys, String[] pointers, MetaFile metaFile) {
+        this.metaFile = metaFile;
+        
         initNewNode();
         this.keys = keys;
         this.pointers = pointers;
@@ -32,7 +38,9 @@ public class Node {
         write();
     }
     
-    public Node(Promotion p) {
+    public Node(Promotion p, MetaFile metaFile) {
+        this.metaFile = metaFile;
+        
         initNewNode();
         this.pointers[0] = p.leftPointer;
         this.keys[0] = p.key;
@@ -40,13 +48,13 @@ public class Node {
         
         write();
         
-        MetaFile.setRootNode(this.identifer);
+        metaFile.setRootNode(this.identifer);
     }
     
     private void initNewNode() {
-        identifer = MetaFile.getNextNodeIdentifier();
-        pointers = new String[MetaFile.FAN_OUT];
-        keys = new String[MetaFile.FAN_OUT - 1];
+        identifer = metaFile.getNextNodeIdentifier();
+        pointers = new String[metaFile.FAN_OUT];
+        keys = new String[metaFile.FAN_OUT - 1];
     }
     
     // Todo: probably make this private
@@ -61,10 +69,12 @@ public class Node {
             String key = keys[i] == null ? "null" : keys[i];
             contents += key + ",";
         }
+        
+        FileUtility fu = new FileUtility(metaFile);
                 
         try {
-            FileUtility.makeDirectory(identifer);
-            FileWriter fw = new FileWriter(FileUtility.getFilename(identifer));
+            fu.makeDirectory(identifer);
+            FileWriter fw = new FileWriter(fu.getFilename(identifer));
             fw.write(contents);
             fw.close();
         } catch (IOException ex) {
@@ -73,8 +83,10 @@ public class Node {
     }
     
     private void read() {
+        FileUtility fu = new FileUtility(metaFile);
+        
         try {
-            File f = new File(FileUtility.getFilename(identifer));
+            File f = new File(fu.getFilename(identifer));
             Scanner s = new Scanner(f);
             
             String storedIdentifier = s.nextLine();
@@ -111,6 +123,7 @@ public class Node {
             
             
             // Implementation -----------------------
+            Comparer comparer = new Comparer(metaFile);
             
             // Copy into larger array in order
             String[] newKeys = new String[keys.length + 1];
@@ -118,7 +131,7 @@ public class Node {
             
             int insertAt = keys.length;
             for (int i = 0; i < keys.length; i++) {
-                if (Comparer.compare(p.key, keys[i]) < 0) {
+                if (comparer.compare(p.key, keys[i]) < 0) {
                     insertAt = i;
                     break;
                 }
@@ -167,14 +180,14 @@ public class Node {
             
             
             // Create a new node
-            Node newNode = new Node(newNodeKeys, newNodePointers);
+            Node newNode = new Node(newNodeKeys, newNodePointers, metaFile);
             
             // Create a new promotion
             Promotion newP = new Promotion(this.identifer, middleKey, newNode.identifer);
             
             // Insert into traversal
             if (traversal.isEmpty()) {
-                Node root = new Node(newP);
+                Node root = new Node(newP, metaFile);
             } else {
                 Node parent = traversal.pop();
                 parent.insert(newP, traversal);
@@ -189,9 +202,10 @@ public class Node {
     }
     
     private void insertLocal(Promotion p) {
+        Comparer comparer = new Comparer(metaFile);
         int insertAt = -1;
         for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null || Comparer.compare(p.key, keys[i]) < 0) {
+            if (keys[i] == null || comparer.compare(p.key, keys[i]) < 0) {
                 insertAt = i;
                 break;
             }

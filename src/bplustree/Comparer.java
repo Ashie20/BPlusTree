@@ -2,15 +2,21 @@ package bplustree;
 
 public class Comparer {
     
-    public static int compare(String key1, String key2) {
-        if (MetaFile.areKeysNumbers()) {
+    private MetaFile metaFile;
+    
+    public Comparer(MetaFile metaFile) {
+        this.metaFile = metaFile;
+    }
+    
+    public int compare(String key1, String key2) {
+        if (metaFile.areKeysNumbers()) {
             return compareNumbers(key1, key2);
         } else {
             return key1.compareToIgnoreCase(key2);
         }
     }
     
-    private static int compareNumbers(String key1, String key2) {
+    private int compareNumbers(String key1, String key2) {
         int num1 = Integer.parseInt(key1);
         int num2 = Integer.parseInt(key2);
         

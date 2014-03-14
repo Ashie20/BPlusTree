@@ -19,14 +19,20 @@ public class Leaf {
     
     private Item[] items;
     
-    public Leaf(Item[] items, String previousLeaf, String nextLeaf) {
+    private MetaFile metaFile;
+    
+    public Leaf(Item[] items, String previousLeaf, String nextLeaf, MetaFile metaFile) {
+        this.metaFile = metaFile;
+        
         initNewLeaf();
         this.items = items;
         this.previousLeaf = previousLeaf;
         this.nextLeaf = nextLeaf;
     }
     
-    public Leaf(String identifier) {
+    public Leaf(String identifier, MetaFile metaFile) {
+        this.metaFile = metaFile;
+        
         if (identifier == null) {
             initNewLeaf();
         } else {
@@ -34,17 +40,18 @@ public class Leaf {
             read();
         }
         
+        
         // Todo: is this necessary
-        if (MetaFile.getRootIdentifier()== null) {
-            MetaFile.setRootNode(this.identifier);
+        if (metaFile.getRootIdentifier()== null) {
+            metaFile.setRootNode(this.identifier);
         }
     }
     
     private void initNewLeaf() {
         previousLeaf = null;
         nextLeaf = null;
-        identifier = MetaFile.getNextLeafIdentifier();
-        items = new Item[MetaFile.FAN_OUT];
+        identifier = metaFile.getNextLeafIdentifier();
+        items = new Item[metaFile.FAN_OUT];
     }
     
     public Item[] getItems() {
@@ -55,7 +62,7 @@ public class Leaf {
         if (nextLeaf == null) {
             return null;
         }
-        return new Leaf(nextLeaf);
+        return new Leaf(nextLeaf, metaFile);
     }
     
     // Todo: probably make this private
@@ -70,10 +77,12 @@ public class Leaf {
             String val = items[i] == null ? "null" : items[i].value;
             contents += val + ",";
         }
+        
+        FileUtility fu = new FileUtility(metaFile);
                 
         try {
-            FileUtility.makeDirectory(identifier);
-            String fileName = FileUtility.getFilename(identifier);
+            fu.makeDirectory(identifier);
+            String fileName = fu.getFilename(identifier);
             FileWriter fw = new FileWriter(fileName);
             fw.write(contents);
             fw.close();
@@ -83,8 +92,9 @@ public class Leaf {
     }
     
     private void read() {
+        FileUtility fu = new FileUtility(metaFile);
         try {
-            File f = new File(FileUtility.getFilename(identifier));
+            File f = new File(fu.getFilename(identifier));
             Scanner s = new Scanner(f);
             
             String[] info = s.nextLine().split(",");
@@ -119,8 +129,10 @@ public class Leaf {
             // split and promote
             Leaf newLeaf = split();
             
+            Comparer comparer = new Comparer(metaFile);
+            
             // This is bad but is has to be here
-            if (Comparer.compare(item.key, newLeaf.items[0].key) < 0) {
+            if (comparer.compare(item.key, newLeaf.items[0].key) < 0) {
                 this.insertLocal(item);
             } else {
                 newLeaf.insertLocal(item);
@@ -138,9 +150,10 @@ public class Leaf {
     }
     
     private void insertLocal(Item item) {
+        Comparer comparer = new Comparer(metaFile);
         int insertAt = -1;
         for (int i = 0 ; i < items.length; i++) {
-            if (items[i] == null || Comparer.compare(item.key, items[i].key) < 0) {
+            if (items[i] == null || comparer.compare(item.key, items[i].key) < 0) {
                 insertAt = i;
                 break;
             }
@@ -167,7 +180,7 @@ public class Leaf {
             j++;
         }
         
-        Leaf newLeaf = new Leaf(newItems, this.identifier, nextLeaf);
+        Leaf newLeaf = new Leaf(newItems, this.identifier, nextLeaf, metaFile);
         newLeaf.write();
         this.nextLeaf = newLeaf.identifier;
         
@@ -184,7 +197,7 @@ public class Leaf {
                 
         Node parent;
         if (traversal.isEmpty()) {
-            parent = new Node(p);  // Creates a new node and writes to disk
+            parent = new Node(p, metaFile);  // Creates a new node and writes to disk
         } else {
             parent = traversal.pop();
             parent.insert(p, traversal);
