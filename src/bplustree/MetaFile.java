@@ -15,8 +15,8 @@ public class MetaFile {
     private int nodeCount = 0;
     private int leafCount = 0;
     private boolean keysAreNumbers = true;
-    public int FAN_OUT = 10;
-    public int BUCKET_SIZE = 10;    
+    public int FAN_OUT = 200;
+    public int BUCKET_SIZE = 500;    
     
     // Things to not store (stay in memory only)
     private boolean writeImmediately = true;

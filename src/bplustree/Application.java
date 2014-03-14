@@ -1,6 +1,6 @@
 package bplustree;
 
-import binaryReader.TimeRow;
+import binaryReader.*;
 import java.io.File;
 import java.util.List;
 import java.util.Scanner;
@@ -12,41 +12,37 @@ import java.util.Scanner;
 public class Application {
     
     public static void main(String[] args) {
-        //createTimesTree();
         
-        BPlusTree bpt = new BPlusTree("C:\\Users\\Ryan\\Desktop\\tree");
-        bpt.getMetaFile().setKeyType(false);
-                    
-        bpt.insert(new Item("A", "record_1.bat"));     
-        bpt.insert(new Item("C", "record_2.bat"));
-        bpt.insert(new Item("B", "record_3.bat"));
-        bpt.insert(new Item("D", "record_4.bat"));
-        bpt.insert(new Item("E", "record_5.bat"));
-        bpt.insert(new Item("F", "record_6.bat"));
-        bpt.insert(new Item("G", "record_7.bat"));
-        bpt.insert(new Item("H", "record_8.bat"));
-        bpt.insert(new Item("I", "record_9.bat"));
-        bpt.insert(new Item("J", "record_10.bat"));
-        bpt.insert(new Item("K", "record_11.bat"));
-        bpt.insert(new Item("L", "record_12.bat"));
-        bpt.insert(new Item("M", "record_13.bat"));
-        bpt.insert(new Item("N", "record_14.bat"));
-        bpt.insert(new Item("O", "record_15.bat"));
-        bpt.insert(new Item("P", "record_16.bat"));
+        System.out.println("Menu:");
+        System.out.println("\t1: Locations Table");
+        System.out.println("\t2: Users Table");
+        System.out.println("\t3: Times Table");
+        System.out.println("\t4: Dates Table");
+        System.out.println("\t5: Messages Table");
         
-        //MetaFile.write();
+        Scanner in = new Scanner(System.in);
+        int choice = Integer.parseInt(in.nextLine());
         
-        List<Item> results = bpt.search("O");
-        
-        System.out.println("Results:");
-        for (Item i : results) {
-            System.out.println(i.key + ": " + i.value);
+        switch (choice) {
+            case 1:
+                createLocationsTree();
+                break;
+            case 2: 
+                createUsersTree();
+                break;
+            case 3: 
+                createTimesTree();
+                break;
+            case 4: 
+                createDatesTree();
+                break;
+            case 5:
+                createMessagesTree();
+                break;
+            default:
+                System.out.println("Not a valid option");
+                break;
         }
-        if (results.isEmpty()) {
-            System.out.println("Empty result set");
-        }
-        
-        System.out.println("Done.");
         
     }
         
@@ -82,4 +78,135 @@ public class Application {
         bpt.getMetaFile().write();
     }
     
+    private static void createDatesTree() {
+        Scanner in = new Scanner(System.in);
+        
+        System.out.println("Enter base path for dates structure: ");
+        String basePath = in.nextLine();
+                
+        System.out.print("Enter base path to existing dates directory: ");
+        String originalsPath = in.nextLine();
+        
+        System.out.print("Enter number of dates: ");
+        int num = Integer.parseInt(in.nextLine());
+        
+        BPlusTree bpt = new BPlusTree(basePath);
+        bpt.getMetaFile().setKeyType(true);
+        bpt.getMetaFile().setWriteMode(false);
+        
+        for (int i = 0; i < num; i++) {
+            String filename = String.format("%s/date_%06d.dat", originalsPath, i);
+            
+            if (i % 100 == 0) {
+                System.out.println("Inserting " + filename);
+            }
+            
+            DateRow row = new DateRow(filename);
+            Item item = new Item(row.getMonth() + "", row.getFileName());
+            bpt.insert(item);
+            
+        }
+        
+        bpt.getMetaFile().setWriteMode(true);
+        bpt.getMetaFile().write();
+    }
+    
+    private static void createUsersTree() {
+        Scanner in = new Scanner(System.in);
+        
+        System.out.println("Enter base path for users structure: ");
+        String basePath = in.nextLine();
+                
+        System.out.print("Enter base path to existing users directory: ");
+        String originalsPath = in.nextLine();
+        
+        System.out.print("Enter number of users: ");
+        int num = Integer.parseInt(in.nextLine());
+        
+        BPlusTree bpt = new BPlusTree(basePath);
+        bpt.getMetaFile().setKeyType(true);
+        bpt.getMetaFile().setWriteMode(false);
+        
+        for (int i = 0; i < num; i++) {
+            String filename = String.format("%s/user_%06d.dat", originalsPath, i);
+            
+            if (i % 100 == 0) {
+                System.out.println("Inserting " + filename);
+            }
+            
+            UserRow row = new UserRow(filename);
+            Item item = new Item(row.getLocationID() + "", row.getFileName());
+            bpt.insert(item);
+            
+        }
+        
+        bpt.getMetaFile().setWriteMode(true);
+        bpt.getMetaFile().write();
+    }
+    
+    private static void createLocationsTree() {
+        Scanner in = new Scanner(System.in);
+        
+        System.out.println("Enter base path for locations tree structure: ");
+        String basePath = in.nextLine();
+                
+        System.out.print("Enter base path to existing locations directory: ");
+        String originalsPath = in.nextLine();
+        
+        System.out.print("Enter number of locations: ");
+        int num = Integer.parseInt(in.nextLine());
+        
+        BPlusTree bpt = new BPlusTree(basePath);
+        bpt.getMetaFile().setWriteMode(false);
+        
+        for (int i = 0; i < num; i++) {
+            String filename = String.format("%s/location_%06d.dat", originalsPath, i);
+            
+            if (i % 100 == 0) {
+                System.out.println("Inserting " + filename);
+            }
+            
+            LocationRow row = new LocationRow(filename);
+            Item item = new Item(row.getState() + "", row.getFileName());
+            bpt.insert(item);
+            
+        }
+        
+        bpt.getMetaFile().setWriteMode(true);
+        bpt.getMetaFile().write();
+    }
+    
+    private static void createMessagesTree() {
+        Scanner in = new Scanner(System.in);
+        
+        System.out.println("Enter base path for messages tree structure: ");
+        String basePath = in.nextLine();
+                
+        System.out.print("Enter base path to existing messages directory: ");
+        String originalsPath = in.nextLine();
+        
+        System.out.print("Enter number of messages: ");
+        int num = Integer.parseInt(in.nextLine());
+        
+        BPlusTree bpt = new BPlusTree(basePath);
+        bpt.getMetaFile().setKeyType(true);
+        bpt.getMetaFile().setWriteMode(false);
+        
+        for (int i = 0; i < num; i++) {
+            int subdir = (i / 100000 + 1) * 100000;
+            String filename = String.format("%s/%06d/message_%08d.dat", originalsPath, subdir, i);
+            
+            if (i % 1000 == 0) {
+                System.out.println("Inserting " + filename);
+            }
+            
+            MessageRow row = new MessageRow(filename);
+            Item item = new Item(row.getTimeID()+ "", row.getFileName());
+            bpt.insert(item);
+            
+        }
+        
+        bpt.getMetaFile().setWriteMode(true);
+        bpt.getMetaFile().write();
+    }
 }
