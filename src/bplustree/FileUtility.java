@@ -47,7 +47,7 @@ public class FileUtility {
     }
        
     private static String getNodeDirectory(long num) {
-        long bucket = Math.floorDiv(num, BUCKET_SIZE);
+        long bucket = Math.round(Math.floor(num / BUCKET_SIZE));
         return String.format("files/nodes/%06d", bucket);        
     }
     
@@ -56,7 +56,7 @@ public class FileUtility {
     }
     
     private static String getLeafDirectory(long num) {
-        long bucket = Math.floorDiv(num, BUCKET_SIZE);
+        long bucket = Math.round(Math.floor(num / BUCKET_SIZE));
         return String.format("files/leaves/%06d", bucket, num);
     }
     
