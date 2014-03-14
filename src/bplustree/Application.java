@@ -2,6 +2,10 @@ package bplustree;
 
 import binaryReader.*;
 import java.io.File;
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -62,6 +66,8 @@ public class Application {
         System.out.print("Enter number of times: ");
         int num = Integer.parseInt(in.nextLine());
         
+        long start = Calendar.getInstance().getTimeInMillis();
+        
         BPlusTree bpt = new BPlusTree(basePath);
         bpt.getMetaFile().setWriteMode(false);
         
@@ -80,6 +86,10 @@ public class Application {
         
         bpt.getMetaFile().setWriteMode(true);
         bpt.getMetaFile().write();
+        
+        long finish = Calendar.getInstance().getTimeInMillis();
+        double duration = (finish - start) * 0.001;
+        System.out.println(String.format("Processing Time: %.4f seconds", duration));
     }
     
     private static void createDatesTree() {
@@ -93,6 +103,8 @@ public class Application {
         
         System.out.print("Enter number of dates: ");
         int num = Integer.parseInt(in.nextLine());
+        
+        long start = Calendar.getInstance().getTimeInMillis();
         
         BPlusTree bpt = new BPlusTree(basePath);
         bpt.getMetaFile().setKeyType(true);
@@ -113,6 +125,10 @@ public class Application {
         
         bpt.getMetaFile().setWriteMode(true);
         bpt.getMetaFile().write();
+        
+        long finish = Calendar.getInstance().getTimeInMillis();
+        double duration = (finish - start) * 0.001;
+        System.out.println(String.format("Processing Time: %.4f seconds", duration));
     }
     
     private static void createUsersTree() {
@@ -126,6 +142,8 @@ public class Application {
         
         System.out.print("Enter number of users: ");
         int num = Integer.parseInt(in.nextLine());
+        
+        long start = Calendar.getInstance().getTimeInMillis();
         
         BPlusTree bpt = new BPlusTree(basePath);
         bpt.getMetaFile().setKeyType(true);
@@ -146,6 +164,10 @@ public class Application {
         
         bpt.getMetaFile().setWriteMode(true);
         bpt.getMetaFile().write();
+        
+        long finish = Calendar.getInstance().getTimeInMillis();
+        double duration = (finish - start) * 0.001;
+        System.out.println(String.format("Processing Time: %.4f seconds", duration));
     }
     
     private static void createLocationsTree() {
@@ -159,6 +181,8 @@ public class Application {
         
         System.out.print("Enter number of locations: ");
         int num = Integer.parseInt(in.nextLine());
+        
+        long start = Calendar.getInstance().getTimeInMillis();
         
         BPlusTree bpt = new BPlusTree(basePath);
         bpt.getMetaFile().setWriteMode(false);
@@ -178,6 +202,10 @@ public class Application {
         
         bpt.getMetaFile().setWriteMode(true);
         bpt.getMetaFile().write();
+        
+        long finish = Calendar.getInstance().getTimeInMillis();
+        double duration = (finish - start) * 0.001;
+        System.out.println(String.format("Processing Time: %.4f seconds", duration));
     }
     
     private static void createMessagesTree() {
@@ -191,6 +219,8 @@ public class Application {
         
         System.out.print("Enter number of messages: ");
         int num = Integer.parseInt(in.nextLine());
+        
+        long start = Calendar.getInstance().getTimeInMillis();
         
         BPlusTree bpt = new BPlusTree(basePath);
         bpt.getMetaFile().setKeyType(true);
@@ -212,6 +242,10 @@ public class Application {
         
         bpt.getMetaFile().setWriteMode(true);
         bpt.getMetaFile().write();
+        
+        long finish = Calendar.getInstance().getTimeInMillis();
+        double duration = (finish - start) * 0.001;
+        System.out.println(String.format("Processing Time: %.4f seconds", duration));
     }
     
     private static void testSearchLocations() {
@@ -228,5 +262,44 @@ public class Application {
         for (Item i : results) {
             System.out.println(i.key + ": " + i.value);
         }
+    }
+    
+    private static void query1() {
+        Scanner in = new Scanner(System.in);
+        
+        System.out.print("Enter base path for locations tree structure: ");
+        String locationsBase = in.nextLine();
+        
+        System.out.print("Enter base path for users tree structure: ");
+        String usersBase = in.nextLine();
+        
+        long start = Calendar.getInstance().getTimeInMillis();
+        
+        
+        BPlusTree locationsTree = new BPlusTree(locationsBase);
+        
+        // Search locations, get back a list of items whose values are file names
+        List<Item> locations = locationsTree.search("Nebraska");
+                
+        List<Integer> locationIds = new ArrayList<>(locations.size());
+        for (Item i : locations) {
+            LocationRow lr = new LocationRow(i.value);
+            locationIds.add(lr.getId());
+        }
+        
+        
+        BPlusTree usersTree = new BPlusTree(usersBase);
+        int numUsersFromNebraska = 0;
+        for (int i : locationIds) {
+            List<Item> users = usersTree.search(i + "");
+            numUsersFromNebraska += users.size();
+        }
+        
+        System.out.println(String.format("Found %d users from Nebraska", numUsersFromNebraska));
+        
+        long finish = Calendar.getInstance().getTimeInMillis();
+        double duration = (finish - start) * 0.001;
+        System.out.println(String.format("Processing Time: %.4f seconds", duration));
+        
     }
 }

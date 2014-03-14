@@ -158,6 +158,14 @@ public class Leaf {
                 break;
             }
         }
+        
+        // Debug
+        if (insertAt < 0 || insertAt >= items.length) {
+            System.out.println("Out of bounds: insertLocal() with item " + item.key +" " + item.value);
+            return;
+        }
+        
+        
         for (int i = items.length - 1; i > insertAt; i--) {
             items[i] = items[i-1];
         }
