@@ -19,6 +19,7 @@ public class Application {
         System.out.println("\t3: Times Table");
         System.out.println("\t4: Dates Table");
         System.out.println("\t5: Messages Table");
+        System.out.println("\t6: Test Search Locations");
         
         Scanner in = new Scanner(System.in);
         int choice = Integer.parseInt(in.nextLine());
@@ -38,6 +39,9 @@ public class Application {
                 break;
             case 5:
                 createMessagesTree();
+                break;
+            case 6: 
+                testSearchLocations();
                 break;
             default:
                 System.out.println("Not a valid option");
@@ -208,5 +212,21 @@ public class Application {
         
         bpt.getMetaFile().setWriteMode(true);
         bpt.getMetaFile().write();
+    }
+    
+    private static void testSearchLocations() {
+        Scanner in = new Scanner(System.in);
+        
+        System.out.println("Enter base path for messages tree structure: ");
+        String basePath = in.nextLine();
+        
+        BPlusTree bpt = new BPlusTree(basePath);
+        
+        List<Item> results = bpt.search("Nebraska");
+        
+        System.out.println("Results: " + results.size());
+        for (Item i : results) {
+            System.out.println(i.key + ": " + i.value);
+        }
     }
 }
